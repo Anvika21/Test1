@@ -1,0 +1,79 @@
+
+Dim RecNo
+  
+' Posts data to the log (helper routine)
+Sub ProcessData
+  Dim Fldr, i
+  
+  Fldr = Log.CreateFolder("Record: " + aqConvert.VarToStr(RecNo))
+  Log.PushLogFolder Fldr
+  
+  For i = 0 To DDT.CurrentDriver.ColumnCount - 1
+    Log.Message DDT.CurrentDriver.ColumnName(i) + ": " + aqConvert.VarToStr(DDT.CurrentDriver.Value(i))
+  Next
+  
+  Log.PopLogFolder
+  RecNo = RecNo + 1
+End Sub
+  
+' Creates the driver (main routine)
+Sub TestDriver
+  Dim Driver
+  
+  ' Creates the driver
+  ' If you connect to an Excel 2007 sheet, use the following method call:
+  ' Set Driver = DDT.ExcelDriver("C:\MyFile.xlsx", "Sheet1", True)
+  Set Driver = DDT.ExcelDriver("C:\MyFile.xls", "Sheet1") 
+  
+  ' Iterates through records
+  RecNo = 0
+  While Not Driver.EOF()
+    Call ProcessData() ' Processes data
+    Call Driver.Next() ' Goes to the next record
+  WEnd
+  
+  ' Closes the driver
+  Call DDT.CloseDriver(Driver.Name)
+End Sub
+
+Sub ImportRegressionClients()
+  
+    'Appending the log
+    Log.AppendFolder("Importing Personal Tax Regression Clients")
+                
+    Set Driver = DDT.ExcelDriver(PersonalTaxRegressionTestExcelFullPath , PersonalTaxRegressionImportClientsSheetName,true)
+         
+    DDT.CurrentDriver.DriveMethod("ImportPTRegressionClients.ImportClients")   
+    
+    'Pop log folder in test log
+    Log.PopLogFolder()    
+
+ Sub ImportClients()
+    
+   'Appending the log
+    Log.AppendFolder(DDT.CurrentDriver.Value("Description"))
+    
+    'Call import 
+    Call PersonalTaxImportClient()
+           
+    'Pop log folder in test log
+    Log.PopLogFolder()       
+  
+  End Sub 
+
+  Sub SelectVATFilerClient()
+    
+    'Appending the log
+    Log.AppendFolder("Select VATFiler Client for: " + (DDT.CurrentDriver.Value("ClientID")))
+    
+    Aliases.IRISVATFilerObjectMap.wndVATFilerLayout.txtClientIDMenu.Clear()
+    Aliases.IRISVATFilerObjectMap.wndVATFilerLayout.txtClientIDMenu.Keys(DDT.CurrentDriver.Value("ClientID"))
+    Aliases.IRISVATFilerObjectMap.wndVATFilerLayout.txtClientIDMenu.Keys ("[Enter]")
+    'Call ClickNoToHMRCAuthorisation()
+    
+    'Pop log folder in test log
+
+
+    Log.PopLogFolder()  
+   
+  End Sub
